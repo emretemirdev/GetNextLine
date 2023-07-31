@@ -10,23 +10,70 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-char  *get_next_line(int fd)
-{
-    static char *str = NULL;
-    char        *buf;
-    int         char_reads;
-    int         i;
+#include "get_next_line.h"
 
-    if (!str)
-        str = malloc(sizeof(char) * 256);
-    buf = malloc(sizeof(char) * 256);
-    i = 0;
-    while ((char_reads = read(fd, buf, 1)))
-    {
-        buf[char_reads] = '\0';
-        str[i] = buf[0];
-        i++;
-    }
-    str[i] = '\0';
-    return (str);
+static int	ft_buffprocesor(int fd, char *str)
+{
+	static char	aux[BUFFER_SIZE + 1];
+	char		*nl;
+	int			i;
+
+	if (*aux != 0)
+	{
+		i = ft_strcpy(str, aux);
+		*aux = 0;
+	}
+	else
+	{
+		i = read(fd, str, BUFFER_SIZE);
+		if (i >= 0)
+			str[i] = 0;
+		else
+			*str = 0;
+	}
+	nl = ft_strchr(str, '\n');
+	if (!nl)
+		return (i);
+	i -= ft_strcpy(aux, ++nl);
+	*nl = 0;
+	return (i);
+}
+
+static char	*ft_createstr(int len)
+{
+	char	*str;
+
+	str = malloc(sizeof(char) * (len + 1));
+	if (!str)
+		return (0);
+	while (len >= 0)
+		str[len--] = 0;
+	return (str);
+}
+
+char	*get_next_line(int fd)
+{
+	static int	i;
+	int			j;
+	char		*str;
+	char		buff[BUFFER_SIZE + 1];
+
+	if (BUFFER_SIZE <= 0 || fd < 0)
+		return (0);
+	if (!i)
+		i = 0;
+	j = ft_buffprocesor(fd, buff);
+	if (!*buff)
+		return (0);
+	i += j;
+	str = 0;
+	if (!ft_strchr(buff, '\n'))
+		str = get_next_line(fd);
+	i -= j;
+	if (!str)
+		str = ft_createstr(i + j);
+	if (!str)
+		return (0);
+	ft_memcpy(str + i, buff, j);
+	return (str);
 }
