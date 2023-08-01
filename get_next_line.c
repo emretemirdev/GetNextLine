@@ -6,17 +6,15 @@
 /*   By: emtemir <emtemir@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/28 12:59:22 by emtemir           #+#    #+#             */
-/*   Updated: 2023/08/01 10:12:24 by emtemir          ###   ########.fr       */
+/*   Updated: 2023/08/01 15:07:56 by emtemir          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include <string.h>
 #include "get_next_line.h"
 #include <stdlib.h>
 #include <stdio.h>//TODO
 
-/*
- * Polish linked list for next call
-*/
 void	polish_list(t_list **list)
 {
 	t_list	*last_node;
@@ -42,9 +40,6 @@ void	polish_list(t_list **list)
 	dealloc(list, clean_node, buf);
 }
 
-/*
- * Get my (line\n] 
-*/
 char	*get_line(t_list *list)
 {
 	int		str_len;
@@ -58,12 +53,9 @@ char	*get_line(t_list *list)
 		return (NULL);
 	copy_str(list, next_str);
 	return (next_str);
+	free(next_str);
 }
 
-/*
- * append one node
- * to the end of list
-*/
 void	append(t_list **list, char *buf)
 {
 	t_list	*new_node;
@@ -102,11 +94,6 @@ void	create_list(t_list **list, int fd)
 	}
 }
 
-/*
- * Mother function
- * 	~Took a fildes
- * 	~Gives back the next_string 
-*/
 char	*get_next_line(int fd)
 {
 	static t_list	*list = NULL;
@@ -121,19 +108,18 @@ char	*get_next_line(int fd)
 	polish_list(&list);
 	return (next_line);
 }
-#include <stdio.h>
-#include <string.h>
 
 int main() {
     int fd = open("file.txt", O_RDONLY); 
 	char *line;
-	int i;
+	int i = 0 ;
     while (i < 5)
 	{
 		line = get_next_line(fd);
     	printf("%d. Satır =  %s\n", ++i, line);
+		free(line);
 	}
-	free(line); // Hafızayı serbest bırakmayı unutmayın
+	system("leaks a.out");
     close(fd);
     return 0;
 }
