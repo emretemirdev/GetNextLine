@@ -3,123 +3,63 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.c                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: emtemir <emtemir@student.42.fr>            +#+  +:+       +#+        */
+/*   By: emre <emre@student.1337.ma>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/07/28 12:59:22 by emtemir           #+#    #+#             */
-/*   Updated: 2023/08/01 15:07:56 by emtemir          ###   ########.fr       */
+/*   Created: 2023/08/02 16:01:02 by emre              #+#    #+#             */
+/*   Updated: 2023/08/02 18:42:03 by emre             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <string.h>
 #include "get_next_line.h"
-#include <stdlib.h>
-#include <stdio.h>//TODO
 
-void	polish_list(t_list **list)
+char	*ft_read_to_left_str(int fd, char *left_str)
 {
-	t_list	*last_node;
-	t_list	*clean_node;
-	int		i;
-	int		k;
-	char	*buf;
+    char	*buff;
+    int		rd_bytes;
 
-	buf = malloc(BUFFER_SIZE + 1);
-	clean_node = malloc(sizeof(t_list));
-	if (NULL == buf || NULL == clean_node)
-		return ;
-	last_node = find_last_node(*list);
-	i = 0;
-	k = 0;
-	while (last_node->str_buf[i] && last_node->str_buf[i] != '\n')
-		++i;
-	while (last_node->str_buf[i] && last_node->str_buf[++i])
-		buf[k++] = last_node->str_buf[i];
-	buf[k] = '\0';
-	clean_node->str_buf = buf;
-	clean_node->next = NULL;
-	dealloc(list, clean_node, buf);
-}
-
-char	*get_line(t_list *list)
-{
-	int		str_len;
-	char	*next_str;
-
-	if (NULL == list)
-		return (NULL);
-	str_len = len_to_newline(list);
-	next_str = malloc(str_len + 1);
-	if (NULL == next_str)
-		return (NULL);
-	copy_str(list, next_str);
-	return (next_str);
-	free(next_str);
-}
-
-void	append(t_list **list, char *buf)
-{
-	t_list	*new_node;
-	t_list	*last_node;
-
-	last_node = find_last_node(*list);
-	new_node = malloc(sizeof(t_list));
-	if (NULL == new_node)
-		return ;
-	if (NULL == last_node)
-		*list = new_node;
-	else
-		last_node->next = new_node;
-	new_node->str_buf = buf;
-	new_node->next = NULL;
-}
-
-void	create_list(t_list **list, int fd)
-{
-	int		char_read;	
-	char	*buf;
-
-	while (!found_newline(*list))
-	{
-		buf = malloc(BUFFER_SIZE + 1);
-		if (NULL == buf)
-			return ;
-		char_read = read(fd, buf, BUFFER_SIZE);
-		if (!char_read)
-		{
-			free(buf);
-			return ;
-		}
-		buf[char_read] = '\0';
-		append(list, buf);
-	}
+    buff = malloc((BUFFER_SIZE + 1) * sizeof(char));
+    if (!buff)
+        return (NULL);
+    rd_bytes = 1;
+    while (!ft_strchr(left_str, '\n') && rd_bytes != 0)
+    {
+        rd_bytes = read(fd, buff, BUFFER_SIZE);
+        if (rd_bytes == -1)
+        {
+            free(buff);
+            return (NULL);
+        }
+        buff[rd_bytes] = '\0';
+        left_str = ft_strjoin(left_str, buff);
+    }
+    free(buff);
+    return (left_str);
 }
 
 char	*get_next_line(int fd)
 {
-	static t_list	*list = NULL;
-	char			*next_line;
+    char		*line;
+    static char	*left_str; //Bu dizi, okuma işlemi sırasında
+    // dosyanın solunda kalan veriyi saklamak için kullanılır.
 
-	if (fd < 0 || BUFFER_SIZE <= 0 || read(fd, &next_line, 0) < 0)
-		return (NULL);
-	create_list(&list, fd);
-	if (list == NULL)
-		return (NULL);
-	next_line = get_line(list);
-	polish_list(&list);
-	return (next_line);
+    if (fd < 0 || BUFFER_SIZE <= 0)
+        return (0);
+    left_str = ft_read_to_left_str(fd, left_str);
+    if (!left_str)
+        return (NULL);
+    line = ft_get_line(left_str);
+    left_str = ft_new_left_str(left_str);
+    return (line);
 }
-
-int main() {
-    int fd = open("file.txt", O_RDONLY); 
-	char *line;
-	int i = 0 ;
-    while (i < 5)
-	{
-		line = get_next_line(fd);
-    	printf("%d. Satır =  %s\n", ++i, line);
-		free(line);
-	}
-	system("leaks a.out");
-    close(fd);
-    return 0;
+#include <stdio.h>
+int main()
+{
+    int fd = open("test.txt", O_RDONLY);
+    char *newline;
+    int i = 0;
+    while (i <= 10)
+    {
+        newline = get_next_line(fd);
+        printf("%d. Sa: %s", ++i,newline);
+    }
 }
