@@ -3,125 +3,120 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line_utils.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: emre <emre@student.1337.ma>                +#+  +:+       +#+        */
+/*   By: emtemir <emtemir@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2023/08/02 16:02:23 by emre              #+#    #+#             */
-/*   Updated: 2023/08/02 17:34:38 by emre             ###   ########.fr       */
+/*   Created: 2023/02/15 17:58:53 by Oceano            #+#    #+#             */
+/*   Updated: 2023/08/03 19:07:35 by emtemir          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
+#include <stdlib.h>
 
-#include "get_next_line.h"
-
-size_t	ft_strlen(char *s)
+int	found_newline(t_list *list)
 {
-    size_t	i;
+	int	i;
 
-    i = 0;
-    if (!s)
-        return (0);
-    while (s[i] != '\0')
-        i++;
-    return (i);
+	if (NULL == list)
+		return (0);
+	while (list)
+	{
+		i = 0;
+		while (list->str_buf[i] && i < BUFFER_SIZE)
+		{
+			if (list->str_buf[i] == '\n')
+				return (1);
+			++i;
+		}
+		list = list->next;
+	}
+	return (0);
 }
 
-char	*ft_strchr(char *s, int c)
+t_list	*find_last_node(t_list *list)
 {
-    int	i;
-
-    i = 0;
-    if (!s)
-        return (0);
-    if (c == '\0')
-        return ((char *)&s[ft_strlen(s)]);
-    while (s[i] != '\0')
-    {
-        if (s[i] == (char) c)
-            return ((char *)&s[i]);
-        i++;
-    }
-    return (0);
+	if (NULL == list)
+		return (NULL);
+	while (list->next)
+		list = list->next;
+	return (list);
 }
 
-char	*ft_strjoin(char *left_str, char *buff)
+void	copy_str(t_list *list, char *str)
 {
-    size_t	i;
-    size_t	j;
-    char	*str;
+	int	i;
+	int	k;
 
-    if (!left_str)
-    {
-        left_str = (char *)malloc(1 * sizeof(char));
-        left_str[0] = '\0';
-    }
-    if (!left_str || !buff)
-        return (NULL);
-    str = malloc(sizeof(char) * ((ft_strlen(left_str) + ft_strlen(buff)) + 1));
-    if (str == NULL)
-        return (NULL);
-    i = -1;
-    j = 0;
-    if (left_str)
-        while (left_str[++i] != '\0')
-            str[i] = left_str[i];
-    while (buff[j] != '\0')
-        str[i++] = buff[j++];
-    str[ft_strlen(left_str) + ft_strlen(buff)] = '\0';
-    free(left_str);
-    return (str);
+	if (NULL == list)
+		return ;
+	k = 0;
+	while (list)
+	{
+		i = 0;
+		while (list->str_buf[i])
+		{
+			if (list->str_buf[i] == '\n')
+			{
+				str[k++] = '\n';
+				str[k] = '\0';
+				return ;
+			}
+			str[k++] = list->str_buf[i++];
+		}
+		list = list->next;
+	}
+	str[k] = '\0';
 }
 
-char	*ft_get_line(char *left_str)
+/*
+ * find the len to new line in
+ * my linked list
+*/
+int	len_to_newline(t_list *list)
 {
-    int		i;
-    char	*str;
+	int	i;
+	int	len;
 
-    i = 0;
-    if (!left_str[i])
-        return (NULL);
-    while (left_str[i] && left_str[i] != '\n')
-        i++;
-    str = (char *)malloc(sizeof(char) * (i + 2));
-    if (!str)
-        return (NULL);
-    i = 0;
-    while (left_str[i] && left_str[i] != '\n')
-    {
-        str[i] = left_str[i];
-        i++;
-    }
-    if (left_str[i] == '\n')
-    {
-        str[i] = left_str[i];
-        i++;
-    }
-    str[i] = '\0';
-    return (str);
+	if (NULL == list)
+		return (0);
+	len = 0;
+	while (list)
+	{
+		i = 0;
+		while (list->str_buf[i])
+		{
+			if (list->str_buf[i] == '\n')
+			{
+				++len;
+				return (len);
+			}
+			++i;
+			++len;
+		}
+		list = list->next;
+	}
+	return (len);
 }
 
-char	*ft_new_left_str(char *left_str)
+void	dealloc(t_list **list, t_list *clean_node, char *buf)
 {
-    int		i;
-    int		j;
-    char	*str;
+	t_list	*tmp;
 
-    i = 0;
-    while (left_str[i] && left_str[i] != '\n')
-        i++;
-    if (!left_str[i])
-    {
-        free(left_str);
-        return (NULL);
-    }
-    str = (char *)malloc(sizeof(char) * (ft_strlen(left_str) - i + 1));
-    if (!str)
-        return (NULL);
-    i++;
-    j = 0;
-    while (left_str[i])
-        str[j++] = left_str[i++];
-    str[j] = '\0';
-    free(left_str);
-    return (str);
+	if (NULL == *list)
+		return ;
+	while (*list)
+	{
+		tmp = (*list)->next;
+		free((*list)->str_buf);
+		free(*list);
+		*list = tmp;
+	}
+	*list = NULL;
+	if (clean_node->str_buf[0])
+		*list = clean_node;
+	else
+	{
+		free(buf);
+		free(clean_node);
+	}
 }

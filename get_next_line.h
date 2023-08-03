@@ -3,30 +3,38 @@
 /*                                                        :::      ::::::::   */
 /*   get_next_line.h                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: emre <emre@student.1337.ma>                +#+  +:+       +#+        */
+/*   By: emtemir <emtemir@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/08/02 16:01:52 by emre              #+#    #+#             */
-/*   Updated: 2023/08/02 17:34:05 by emre             ###   ########.fr       */
+/*   Updated: 2023/08/03 19:02:46 by emtemir          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #ifndef GET_NEXT_LINE_H
 # define GET_NEXT_LINE_H
 
 # ifndef BUFFER_SIZE
-#  define BUFFER_SIZE 5
+#  define BUFFER_SIZE 10 
 # endif
 
-# include <unistd.h>
-# include <stdlib.h>
 # include <fcntl.h>
+# include <stdlib.h>
+# include <unistd.h>
 
-size_t	ft_strlen(char *s);
-char	*ft_strchr(char *s, int c);
-char	*ft_strjoin(char *left_str, char *buff);
-char	*ft_get_line(char *left_str);
-char	*ft_new_left_str(char *left_str);
+typedef struct s_list
+{
+	char			*str_buf;
+	struct s_list	*next;
+}t_list;
+
+int		found_newline(t_list *list);
+t_list	*find_last_node(t_list *list);
+char	*get_line(t_list *list);
+void	copy_str(t_list *list, char *str);
+int		len_to_newline(t_list *list);
+void	polish_list(t_list **list);
 char	*get_next_line(int fd);
+void	dealloc(t_list **list, t_list *clean_node, char *buf);
+void	create_list(t_list **list, int fd);
 
 #endif
