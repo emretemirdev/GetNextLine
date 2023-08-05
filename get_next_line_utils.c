@@ -6,117 +6,32 @@
 /*   By: emtemir <emtemir@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/02/15 17:58:53 by Oceano            #+#    #+#             */
-/*   Updated: 2023/08/03 19:07:35 by emtemir          ###   ########.fr       */
+/*   Updated: 2023/08/05 16:57:13 by emtemir          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <stdlib.h>
 
-int	found_newline(t_list *list)
+int	find_newline_index(char *buff)
 {
 	int	i;
 
-	if (NULL == list)
-		return (0);
-	while (list)
+	i = 0;
+	while (buff[i])
 	{
-		i = 0;
-		while (list->str_buf[i] && i < BUFFER_SIZE)
-		{
-			if (list->str_buf[i] == '\n')
-				return (1);
-			++i;
-		}
-		list = list->next;
+		if (buff[i] == '\n')
+			return (i);
+		i++;
 	}
-	return (0);
+	return (-1);
 }
 
-t_list	*find_last_node(t_list *list)
+size_t	ft_strlen(char *str)
 {
-	if (NULL == list)
-		return (NULL);
-	while (list->next)
-		list = list->next;
-	return (list);
-}
+	size_t	i;
 
-void	copy_str(t_list *list, char *str)
-{
-	int	i;
-	int	k;
-
-	if (NULL == list)
-		return ;
-	k = 0;
-	while (list)
-	{
-		i = 0;
-		while (list->str_buf[i])
-		{
-			if (list->str_buf[i] == '\n')
-			{
-				str[k++] = '\n';
-				str[k] = '\0';
-				return ;
-			}
-			str[k++] = list->str_buf[i++];
-		}
-		list = list->next;
-	}
-	str[k] = '\0';
-}
-
-/*
- * find the len to new line in
- * my linked list
-*/
-int	len_to_newline(t_list *list)
-{
-	int	i;
-	int	len;
-
-	if (NULL == list)
-		return (0);
-	len = 0;
-	while (list)
-	{
-		i = 0;
-		while (list->str_buf[i])
-		{
-			if (list->str_buf[i] == '\n')
-			{
-				++len;
-				return (len);
-			}
-			++i;
-			++len;
-		}
-		list = list->next;
-	}
-	return (len);
-}
-
-void	dealloc(t_list **list, t_list *clean_node, char *buf)
-{
-	t_list	*tmp;
-
-	if (NULL == *list)
-		return ;
-	while (*list)
-	{
-		tmp = (*list)->next;
-		free((*list)->str_buf);
-		free(*list);
-		*list = tmp;
-	}
-	*list = NULL;
-	if (clean_node->str_buf[0])
-		*list = clean_node;
-	else
-	{
-		free(buf);
-		free(clean_node);
-	}
+	i = 0;
+	while (str[i])
+		i++;
+	return (i);
 }
